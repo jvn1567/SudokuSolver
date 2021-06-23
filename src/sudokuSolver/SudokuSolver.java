@@ -17,6 +17,7 @@ import javafx.stage.Stage;
 public class SudokuSolver extends Application {
     
     TextField[][] textFields;
+    Label lblFeedback;
     
     @Override
     public void start(Stage primaryStage) {
@@ -76,17 +77,66 @@ public class SudokuSolver extends Application {
         VBox.setMargin(lblWelcome, new Insets(0, 20, 0, 20));
         menu.getChildren().add(lblWelcome);
         //buttons
-        Button btnCheck = new Button("Check");
-        Button btnSolve = new Button("Solve");
-        menu.getChildren().add(btnCheck);
-        menu.getChildren().add(btnSolve);
-        VBox.setMargin(btnCheck, new Insets(10, 0, 0, 0));
-        VBox.setMargin(btnSolve, new Insets(10, 0, 0, 0));
-        btnCheck.setFont(Font.font(15));
-        btnSolve.setFont(Font.font(15));
-        //button actions
-        //PLACEHOLDER TODO
+        Button[] buttons = new Button[3];
+        String[] buttonText = {"Check", "Solve", "Clear"};
+        for (int i = 0; i < buttons.length; i++) {
+            buttons[i] = new Button();
+            VBox.setMargin(buttons[i], new Insets(10, 0, 0, 0));
+            buttons[i].setFont(Font.font(15));
+            buttons[i].setText(buttonText[i]);
+            menu.getChildren().add(buttons[i]);
+        }
+        //button action events
+        buttons[0].setOnAction(e -> checkBoard());
+        buttons[1].setOnAction(e -> solveBoard());
+        buttons[2].setOnAction(e -> clearTextFields());
+        //label for feedback and error messages
+        lblFeedback = new Label();
+        lblFeedback.setFont(Font.font(15));
+        VBox.setMargin(lblFeedback, new Insets(10, 0, 0, 0));
+        menu.getChildren().add(lblFeedback);
         return menu;
+    }
+    
+    public void checkBoard() {
+        SudokuBoard board = new SudokuBoard();
+        if (setStartingBoard(board)) {
+            if (board.checkFullBoard()) {
+                lblFeedback.setText("The puzzle is correct!");
+            } else {
+                lblFeedback.setText("The puzzle contains mistakes!");
+            }
+        } else {
+            lblFeedback.setText("Invalid input!");
+        }
+    }
+    
+    public void solveBoard() {
+        
+    }
+    
+    public void clearTextFields() {
+        for (int row = 0; row < 9; row++) {
+            for (int col = 0; col < 9; col++) {
+                textFields[row][col].setText("");
+            }
+        }
+    }
+    public boolean setStartingBoard(SudokuBoard board) {
+        for (int row = 0; row < 9; row++) {
+            for (int col = 0; col < 9; col++) {
+                String rawInput = textFields[row][col].getText();
+                if (rawInput.length() > 0) {
+                    try {
+                        int input = Integer.parseInt(rawInput);
+                        board.set(input, row, col);
+                    } catch (NumberFormatException ex) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
     }
     
 }
