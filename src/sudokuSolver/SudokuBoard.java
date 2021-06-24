@@ -14,11 +14,19 @@ public class SudokuBoard {
         board = new int[9][9];
     }
     
+    public int get(int row, int col) {
+        return board[row][col];
+    }
+    
+    int[][] getArray() {
+        return board;
+    }
+    
     public void set(int num, int row, int col) {
         board[row][col] = num;
     }
     
-    public boolean checkFullBoard() {
+    public boolean isValidBoard() {
         boolean valid = true;
         HashSet<Integer>[] rowCheck = emptyCheckSet();
         HashSet<Integer>[] colCheck = emptyCheckSet();
@@ -28,11 +36,13 @@ public class SudokuBoard {
             for (int col = 0; col < 9; col++) {
                 rowCheck[row].add(board[row][col]);
                 colCheck[col].add(board[row][col]);
-                int squareRow = row / 3;
-                int squareCol = col / 3;
-                //* 3 doesn't cancel because row / 3 is integer division
-                int squareIndex = squareRow * 3 + squareCol;
+                //doesn't cancel because integer division
+                int squareIndex = (row / 3) * 3 + col / 3;
                 squareCheck[squareIndex].add(board[row][col]);
+                //filters out invalid numbers
+                if (board[row][col] < 1 || board[row][col] > 9) {
+                    valid = false;
+                }
             }
         }
         //any sets with sizes not equal to 9 means the board was invalid
@@ -44,7 +54,6 @@ public class SudokuBoard {
                 valid = false;
             }
         }
-        System.out.println("TEST");
         return valid;
     }
     
@@ -54,5 +63,77 @@ public class SudokuBoard {
             checker[i] = new HashSet<>();
         }
         return checker;
+    }
+    
+    //27 access and compares per check
+    public boolean isValidTile(int value, int row, int col) {
+        boolean valid = true;
+        //row conflict check
+        for (int col2 = 0; col2 < 9; col2++) {
+            if (board[row][col2] == value) {
+                valid = false;
+            }
+        }
+        //col conflict check
+        for (int row2 = 0; row2 < 9; row2++) {
+            if (board[row2][col] == value) {
+                valid = false;
+            }
+        }
+        //square conflict check
+        for (int row2 = (row / 3) * 3; row2 < ((row / 3) + 1) * 3; row2++) {
+            for (int col2 = (col / 3) * 3; col2 < ((col / 3) + 1) * 3; col2++) {
+                if (board[row2][col2] == value) {
+                    valid = false;
+                }
+            }
+        }
+        return valid;
+    }
+    
+    public boolean solve() {
+        SudokuBoard solution = new SudokuBoard();
+        if (solve(solution, 1, 0, 0, false)) {
+            board = solution.getArray();
+            return isValidBoard();
+        } else {
+            return false;
+        }
+    }
+
+    boolean solve(SudokuBoard solution, int value, int row, int col,
+            boolean backtrack) {
+        //handle location
+        if (row == 9) {
+            return true;
+        } else if (row < 0) {
+            return false;
+        } else if (col == 9) {
+            return solve(solution, value, row + 1, 0, backtrack);
+        } else if (col < 0) {
+            return solve(solution, value, row - 1, 8, backtrack);
+        }
+        //skip over original given values
+        if (board[row][col] != 0 && backtrack) {
+            return solve(solution, value, row, col - 1, backtrack);
+        } else if (board[row][col] != 0 && !backtrack) {
+            solution.set(board[row][col], row, col);
+            return solve(solution, value, row, col + 1, backtrack);
+        }
+        //handle backtrack
+        if (value > 9 || (backtrack && solution.get(row, col) == 9)) {
+            solution.set(0, row, col);
+            return solve(solution, 0, row, col - 1, true);
+        } else if (backtrack) {
+            value = solution.get(row, col);
+            return solve(solution, value + 1, row, col, false);
+        }
+        //handle insertion
+        if (solution.isValidTile(value, row, col)) {
+            solution.set(value, row, col);
+            return solve(solution, 1, row, col + 1, backtrack);
+        } else {
+            return solve(solution, value + 1, row, col, backtrack);
+        }
     }
 }

@@ -100,28 +100,31 @@ public class SudokuSolver extends Application {
     
     public void checkBoard() {
         SudokuBoard board = new SudokuBoard();
-        if (setStartingBoard(board)) {
-            if (board.checkFullBoard()) {
-                lblFeedback.setText("The puzzle is correct!");
-            } else {
-                lblFeedback.setText("The puzzle contains mistakes!");
-            }
+        boolean validInput = setStartingBoard(board);
+        boolean validBoard = board.isValidBoard();
+        if (validInput && validBoard) {
+            lblFeedback.setText("The puzzle is correct!");
+        } else if (validInput && !validBoard) {
+            lblFeedback.setText("The puzzle contains mistakes!");
         } else {
             lblFeedback.setText("Invalid input!");
         }
     }
     
     public void solveBoard() {
-        
-    }
-    
-    public void clearTextFields() {
-        for (int row = 0; row < 9; row++) {
-            for (int col = 0; col < 9; col++) {
-                textFields[row][col].setText("");
-            }
+        SudokuBoard board = new SudokuBoard();
+        boolean validInput = setStartingBoard(board);
+        boolean solutionFound = board.solve();
+        if (validInput && solutionFound) {
+            fillTextFields(board);
+            lblFeedback.setText("");
+        } else if (validInput && !solutionFound) {
+            lblFeedback.setText("No solution found!");
+        } else {
+            lblFeedback.setText("Invalid input!");
         }
     }
+    
     public boolean setStartingBoard(SudokuBoard board) {
         for (int row = 0; row < 9; row++) {
             for (int col = 0; col < 9; col++) {
@@ -139,4 +142,20 @@ public class SudokuSolver extends Application {
         return true;
     }
     
+    public void clearTextFields() {
+        for (int row = 0; row < 9; row++) {
+            for (int col = 0; col < 9; col++) {
+                textFields[row][col].setText("");
+            }
+        }
+        lblFeedback.setText("");
+    }
+    
+    public void fillTextFields(SudokuBoard board) {
+        for (int row = 0; row < 9; row++) {
+            for (int col = 0; col < 9; col++) {
+                textFields[row][col].setText("" + board.get(row, col));
+            }
+        }
+    }
 }
