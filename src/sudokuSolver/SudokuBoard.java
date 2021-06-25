@@ -94,77 +94,9 @@ public class SudokuBoard {
     public boolean solve() {
         SudokuBoard solution = new SudokuBoard();
         copy(solution);
-        int row = 0;
-        int col = 0;
-        int value = 1;
-        boolean backtrack = false;
-        while (row < 9 && row >= 0) {
-            //try placing valid value in location
-            while (!backtrack && row < 9) {
-                //skips values initially in board
-                if (board[row][col] == 0) {
-                    backtrack = solveTile(solution, value, row, col);
-                    value = 1;
-                } else {
-                    solution.set(board[row][col], row, col);
-                }
-                col++;
-                //removes extra col++ for when backtracking is needed
-                if (backtrack) {
-                    col--;
-                    solution.set(0, row, col);
-                }
-                //wrap column
-                if (col == 9) {
-                    row++;
-                    col = 0;
-                }
-            }
-            //backtracks on tiles that cannot be increased
-            while (backtrack && col >= 0) {
-                col--;
-                //wrap column
-                if (col < 0) {
-                    row--;
-                    col = 8;
-                }
-                //skipps values itiially in board
-                if (board[row][col] == 0) {
-                    if (solution.get(row, col) == 9) {
-                        solution.set(0, row, col);
-                    } else {
-                        value = solution.get(row, col);
-                        backtrack = false;
-                    }
-                }
-            }
-        }
+        solve(solution, 1, 0, 0, false);
         board = solution.getArray();
-        if (row == 9) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-    
-    boolean solveTile(SudokuBoard solution, int value, int row, int col) {
-        if (value > 9) {
-            return true;
-        } else if (solution.isValidTile(value, row, col)) {
-            solution.set(value, row, col);
-            return false;
-        } else {
-            return solveTile(solution, value + 1, row, col);
-        }
-    }
-    
-    boolean eraseTrack(SudokuBoard solution, int row, int col) {
-        if (solution.get(row, col) == 9) {
-            solution.set(0, row, col);
-            return true;
-        } else {
-            return false;
-        }
+        return isValidBoard();
     }
     
     void copy(SudokuBoard solution) {
@@ -174,4 +106,41 @@ public class SudokuBoard {
             }
         }
     }
+    
+    boolean solve(SudokuBoard solution, int value, int row, int col,
+            boolean backtrack) {
+        //handle location
+        if (row == 9) {
+            return true;
+        } else if (row < 0) {
+            return false;
+        } else if (col == 9) {
+            return solve(solution, value, row + 1, 0, backtrack);
+        } else if (col < 0) {
+            return solve(solution, value, row - 1, 8, backtrack);
+        }
+        //skip over original given values
+        if (board[row][col] != 0 && backtrack) {
+            return solve(solution, value, row, col - 1, backtrack);
+        } else if (board[row][col] != 0 && !backtrack) {
+            solution.set(board[row][col], row, col);
+            return solve(solution, value, row, col + 1, backtrack);
+        }
+        //handle backtrack
+        if (value > 9 || (backtrack && solution.get(row, col) == 9)) {
+            solution.set(0, row, col);
+            return solve(solution, 0, row, col - 1, true);
+        } else if (backtrack) {
+            value = solution.get(row, col);
+            return solve(solution, value + 1, row, col, false);
+        }
+        //handle insertion
+        if (solution.isValidTile(value, row, col)) {
+            solution.set(value, row, col);
+            return solve(solution, 1, row, col + 1, backtrack);
+        } else {
+            return solve(solution, value + 1, row, col, backtrack);
+        }
+    }
+    
 }
