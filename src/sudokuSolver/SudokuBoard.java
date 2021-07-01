@@ -1,32 +1,61 @@
 package sudokuSolver;
 
-import java.util.Arrays;
 import java.util.HashSet;
 
 /**
+ * This class represents the state of a Sudoku game board.
  *
  * @author John
  */
 public class SudokuBoard {
-    
+
     private int[][] board;
-    
+
+    /**
+     * Constructor for an empty board.
+     */
     public SudokuBoard() {
         board = new int[9][9];
     }
-    
+
+    /**
+     * Returns the value of the board at the passed in location.
+     *
+     * @param row the row of the location to check
+     * @param col the column of the location to check
+     * @return the value at the passed in location
+     */
     int get(int row, int col) {
         return board[row][col];
     }
-    
+
+    /**
+     * Returns the array of integers representing the board.
+     *
+     * @return the board field
+     */
     int[][] getArray() {
         return board;
     }
-    
+
+    /**
+     * Sets the value at the passed in location.
+     *
+     * @param num the value to set
+     * @param row the row of the location to set
+     * @param col the column of the location to set
+     */
     void set(int num, int row, int col) {
         board[row][col] = num;
     }
-    
+
+    /**
+     * Checks whether the board is considered valid by Sudoku rules. No row,
+     * column, or 3x3 block can contain the same number and must contain all
+     * numbers between 1 and 9 inclusive.
+     *
+     * @return true if valid, false if invalid.
+     */
     public boolean isValidBoard() {
         boolean valid = true;
         HashSet<Integer>[] rowCheck = emptyCheckSet();
@@ -57,7 +86,13 @@ public class SudokuBoard {
         }
         return valid;
     }
-    
+
+    /**
+     * Creates an empty array of 9 HashSet<Integer> objects for checking board
+     * validity.
+     *
+     * @return the empty HashSet array to check
+     */
     HashSet<Integer>[] emptyCheckSet() {
         HashSet<Integer>[] checker = new HashSet[9];
         for (int i = 0; i < 9; i++) {
@@ -65,7 +100,16 @@ public class SudokuBoard {
         }
         return checker;
     }
-    
+
+    /**
+     * Checks if the passed in value at the passed in location will still allow
+     * for a valid board.
+     *
+     * @param value the value to check
+     * @param row the row of the location to check
+     * @param col the column of the location to check
+     * @return true if board will still be valid, false if board will be invalid
+     */
     boolean isValidTile(int value, int row, int col) {
         boolean valid = true;
         //row conflict check
@@ -90,15 +134,31 @@ public class SudokuBoard {
         }
         return valid;
     }
-    
+
+    /**
+     * Solve the incomplete Sudoku board and return true if a valid solution was
+     * found.
+     *
+     * @return true if valid solution was found, false if no or invalid solution
+     */
     public boolean solve() {
         SudokuBoard solution = new SudokuBoard();
         copy(solution);
-        solve(solution, 1, 0, 0, false);
+        //catches duplicate numbers that cause stack overflow
+        try {
+            solve(solution, 1, 0, 0, false);
+        } catch (StackOverflowError err) {
+            return false;
+        }
         board = solution.getArray();
         return isValidBoard();
     }
-    
+
+    /**
+     * Copies the current incomplete board onto a new solution board.
+     *
+     * @param solution the initially empty board to store the solution in
+     */
     void copy(SudokuBoard solution) {
         for (int row = 0; row < 9; row++) {
             for (int col = 0; col < 9; col++) {
@@ -106,7 +166,18 @@ public class SudokuBoard {
             }
         }
     }
-    
+
+    /**
+     * Recursively fills in the Sudoku board solution.
+     *
+     * @param solution the SudokuBoard that stores the solution to this board.
+     * @param value the current value to insert into the next location
+     * @param row the row to insert the new value
+     * @param col the column to insert the new value
+     * @param backtrack true if the method is currently backtracking
+     * @return true if a solution was found, false if forced to backtrack beyond
+     * the first tile.
+     */
     boolean solve(SudokuBoard solution, int value, int row, int col,
             boolean backtrack) {
         //handle location
@@ -142,5 +213,5 @@ public class SudokuBoard {
             return solve(solution, value + 1, row, col, backtrack);
         }
     }
-    
+
 }

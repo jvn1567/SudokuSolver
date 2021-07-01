@@ -11,14 +11,21 @@ import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
 /**
+ * This class creates a JavaFX GUI that allows the user to check a finished
+ * Sudoku board or generate the solution for an incomplete board.
  *
  * @author John
  */
 public class SudokuSolver extends Application {
-    
+
     TextField[][] textFields;
     Label lblFeedback;
-    
+
+    /**
+     * Creates the primary stage and main components
+     *
+     * @param primaryStage the main stage
+     */
     @Override
     public void start(Stage primaryStage) {
         //panes
@@ -35,8 +42,13 @@ public class SudokuSolver extends Application {
         primaryStage.setScene(scene);
         primaryStage.show();
     }
-    
-    public GridPane createGridPane() {
+
+    /**
+     * Creates the pane containing the Sudoku board's input text fields.
+     *
+     * @return the completed GridPane
+     */
+    GridPane createGridPane() {
         //board GridPane setup
         GridPane board = new GridPane();
         board.setAlignment(Pos.CENTER);
@@ -66,8 +78,13 @@ public class SudokuSolver extends Application {
         }
         return board;
     }
-    
-    public VBox createMenuPane() {
+
+    /**
+     * Creates a pane for the check, solve, and clear buttons.
+     *
+     * @return the completed VBox 
+     */
+    VBox createMenuPane() {
         //menu VBox setup
         VBox menu = new VBox();
         menu.setAlignment(Pos.CENTER);
@@ -97,8 +114,13 @@ public class SudokuSolver extends Application {
         menu.getChildren().add(lblFeedback);
         return menu;
     }
-    
-    public void checkBoard() {
+
+    /**
+     * Checks the current board inputs and updates the feedback Label for the
+     * user according to whether the board is valid, invalid, or contains
+     * invalid inputs.
+     */
+    void checkBoard() {
         SudokuBoard board = new SudokuBoard();
         boolean validInput = setStartingBoard(board);
         boolean validBoard = board.isValidBoard();
@@ -110,22 +132,33 @@ public class SudokuSolver extends Application {
             lblFeedback.setText("Invalid input!");
         }
     }
-    
-    public void solveBoard() {
+
+    /**
+     * Solves the board and updates the feedback label if no solution is found
+     * or input is invalid.
+     */
+    void solveBoard() {
         SudokuBoard board = new SudokuBoard();
         boolean validInput = setStartingBoard(board);
         boolean solutionFound = board.solve();
         if (validInput && solutionFound) {
             fillTextFields(board);
-            lblFeedback.setText("");
+            lblFeedback.setText("");;
         } else if (validInput && !solutionFound) {
             lblFeedback.setText("No solution found!");
         } else {
             lblFeedback.setText("Invalid input!");
         }
     }
-    
-    public boolean setStartingBoard(SudokuBoard board) {
+
+    /**
+     * Checks all TextFields for input and returns whether all input was valid.
+     *
+     * @param board the Sudoku board to add the valid input into
+     * @return false if any invalid input was discovered. Only integers between
+     * 1 and 9 inclusive are valid.
+     */
+    boolean setStartingBoard(SudokuBoard board) {
         for (int row = 0; row < 9; row++) {
             for (int col = 0; col < 9; col++) {
                 String rawInput = textFields[row][col].getText();
@@ -133,6 +166,9 @@ public class SudokuSolver extends Application {
                     try {
                         int input = Integer.parseInt(rawInput);
                         board.set(input, row, col);
+                        if (input < 1 || input > 9) {
+                            return false;
+                        }
                     } catch (NumberFormatException ex) {
                         return false;
                     }
@@ -141,8 +177,11 @@ public class SudokuSolver extends Application {
         }
         return true;
     }
-    
-    public void clearTextFields() {
+
+    /**
+     * Clears all TextField inputs.
+     */
+    void clearTextFields() {
         for (int row = 0; row < 9; row++) {
             for (int col = 0; col < 9; col++) {
                 textFields[row][col].setText("");
@@ -150,8 +189,13 @@ public class SudokuSolver extends Application {
         }
         lblFeedback.setText("");
     }
-    
-    public void fillTextFields(SudokuBoard board) {
+
+    /**
+     * Fills all text fields with the solution in the passed in completed board.
+     *
+     * @param board the completed Sudoku board
+     */
+    void fillTextFields(SudokuBoard board) {
         for (int row = 0; row < 9; row++) {
             for (int col = 0; col < 9; col++) {
                 textFields[row][col].setText("" + board.get(row, col));
